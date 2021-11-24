@@ -39,8 +39,8 @@
 						aria-expanded="false">접속하기<span class="caret"></span></a>
 					<!--  드랍다운 아이템 영역 -->
 					<ul class="dropdown-menu">
-						<li class="active"><a href="login.jsp">로그인</a></li>
-						<li><a href="join.jsp">회원가입</a></li>
+						<li><a href="login.jsp">로그인</a></li>
+						<li class="active"><a href="join.jsp">회원가입</a></li>
 				 	</ul>
 				 </li>
 			</ul>
@@ -48,7 +48,8 @@
 	</nav>
 	<!--  로그인 양식 -->
 	<div class="container"> <!-- 하나의 영역 생성  -->
-		<div class="col-lg-4"> <!-- 영역 크기 -->
+		<div class="col-lg-4"></div> <!-- 영역 크기 -->
+		<div class="col-lg-4">
 			<!-- 점보트론은 특정 컨텐츠, 정보를 두드러지게 하기 위한 큰 박스 -->
 			<div class="jumbotron" style="padding-top: 20px;">
 				<form method="post" action="joinAction.jsp">
@@ -79,6 +80,7 @@
 				</form>
 			</div>
 		</div>
+		<div class="col-lg-4"></div>
 	</div>
 	<!-- 부트스트랩 참조 영역 -->
 	<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
