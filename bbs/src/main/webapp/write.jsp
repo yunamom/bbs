@@ -77,25 +77,25 @@
 	</nav>
 	<div class="container">
 		<div class="row">
+		<form method="post" action="writeAction.jsp"> 
+		<!-- 폼 태그를 이용해서 액션페이지로 보낼수있게 만든다 메소드를 post 라고해서 보내지는 내용이 숨겨지도록 만든다. -->
 			<table class="table table-striped" style="text-align: center; border: solid #dddddd">
 				<thead>
 					<tr>
-						<th style="background-color: #eeeeee; text-align: center;">번호</th>
-						<th style="background-color: #eeeeee; text-align: center;">제목</th>
-						<th style="background-color: #eeeeee; text-align: center;">작성자</th>
-						<th style="background-color: #eeeeee; text-align: center;">작성일</th>
+						<th colspan="2" style="background-color: #eeeeee; text-align: center;">게시판 글쓰기 양식</th>	
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
-						<td>1</td>
-						<td>안녕하세요.</td>
-						<td>유나맘</td>
-						<td>2021-11-24</td>
+						<td><input type="text" class="form-control" placeholder="글 제목" name="bbsTitle" maxlength="50"></td> <!--특정한 정보를 input 페이지로 보내기위해 사용한다. -->
+					</tr> <!-- 글 제목과 내용이 한줄씩 나올수있도록 tr태그로 각각 묶어준다. -->
+					<tr>
+						<td><textarea class="form-control" placeholder="글 내용" name="bbsContent" maxlength="2048" style="height:350px;"></textarea></td> <!--  글작성  -->
 					</tr>
-				</tbody>		
-			</table> <!-- 테이블 자체는 글의 목록을 보여주는 역할이고 오른쪽 밑에 글을 쓸수있는 화면으로 넘어갈수있게 링크를 달아준다.  -->
-			<a href="write.jsp" class="btn btn-primary pull-right">글쓰기</a>
+				</tbody>				
+			</table>		
+			<input type="submit" class="btn btn-primary pull-right" value="글쓰기"> <!-- 글쓰기 버튼 -->
+		</form>
 		</div>
 	</div>
 	<!-- 부트스트랩 참조 영역 -->
