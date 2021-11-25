@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 
 public class BbsDAO {//dao 클래스 같은 경우는 데이터 접근 객체의 약자로서 실제로 데이터베이스에 접근을해서 데이터를가져올수있는 클래스.
 	private Connection conn;
@@ -62,5 +63,43 @@ public class BbsDAO {//dao 클래스 같은 경우는 데이터 접근 객체의
 			e.printStackTrace();
 		}
 		return -1; //데이터베이스 오류 
+	}
+	public ArrayList<Bbs> getList(int pageNumber){
+		String SQL = "SELECT * FROM BBS WHERE bbsID < ? AND bbsAvailable = 1 ORDER BY bbsID DESC LIMIT 10"; //삭제되지않은 게시물가져오기.
+		ArrayList<Bbs> list = new ArrayList<Bbs>();
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(SQL);
+			pstmt.setInt(1, getNext() - (pageNumber - 1)*10);//중요 
+			//getNext 같은 경우 다음으로 작성될 글의 번호를 의미한다 예로 현재 작성된 글이 5개이면 getNext는 6이 된다.
+			rs = pstmt.executeQuery();
+			while(rs.next()) {
+				Bbs bbs = new Bbs();
+				bbs.setBbsID(rs.getInt(1));
+				bbs.setBbsTitle(rs.getString(2));
+				bbs.setUserID(rs.getString(3));
+				bbs.setBbsDate(rs.getString(4));
+				bbs.setBbsContent(rs.getString(5));
+				bbs.setBbsAvailable(rs.getInt(6)); //삭제되지않은 게시물.
+				list.add(bbs);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+	public boolean nextPage(int pageNumber) {
+		String SQL = "SELECT * FROM BBS WHERE bbsID < ? AND bbsAvailable = 1";
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(SQL);
+			pstmt.setInt(1, getNext() - (pageNumber - 1)*10);//중요 
+			//getNext 같은 경우 다음으로 작성될 글의 번호를 의미한다 예로 현재 작성된 글이 5개이면 getNext는 6이 된다.
+			rs = pstmt.executeQuery();
+			if(rs.next()) {
+				return true; //게시글이 11개가 됬을때 페이지가 2개가 되게한다.
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;	
 	}
 }
