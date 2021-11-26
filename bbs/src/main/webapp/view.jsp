@@ -1,10 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ page import = "java.io.PrintWriter" %>
-<%@ page import = "bbs.BbsDAO" %>
-<%@ page import = "bbs.Bbs" %>
-<%@ page import = "java.util.ArrayList" %> <!-- ArrayList 게시판의 목록을 출력하기 위해서 불러온다. -->
-
+<%@ page import ="bbs.Bbs" %>
+<%@ page import ="bbs.BbsDAO" %> <!-- 데이터베이스 객체를 가져온다. -->]
 <!DOCTYPE html>
 <html>
 <head>
@@ -14,12 +12,6 @@
 <!-- css폴더 안의 bootstrap.css를 참조해서 이 홈페이지의 디자인을 사용하는 링크 -->
 <link rel="stylesheet" href="css/bootstrap.css">
 <title>BBS</title>
-<style type="text/css">
-	a, a:hover { 
-		color: #000000; 
-		text-decoration: none; //색을 검정으로 바꾸고 밑줄이 그어지지 않게끔 style 코드를 추가 
-	}
-</style>
 </head>
 <body>
 	<%
@@ -27,10 +19,18 @@
 		if (session.getAttribute("userID") != null){ //로그인을 한경우 
 			userID = (String) session.getAttribute("userID");
 		}
-		int pageNumber = 1;
-		if(request.getParameter("pageNumber") != null){
-			pageNumber = Integer.parseInt(request.getParameter("pageNumber"));
+		int bbsID = 0;
+		if (request.getParameter("bbsID") != null){
+			bbsID = Integer.parseInt(request.getParameter("bbsID"));
 		}
+		if (bbsID == 0){ //번호가 존재해야지 특정한 글을 볼수있도록한다.
+			PrintWriter script = response.getWriter();
+			script.println("<script>");
+			script.println("alert('유효하지 않은 글입니다.')");
+			script.println("location.href = 'bbs.jsp'");
+			script.println("</script>");
+		}
+		Bbs bbs = new BbsDAO().getBbs(bbsID); //해당글의 정보를 가져올수있게한다.
 	%>
 	<!--  네비게이션 영역 -->
 	<nav class="navbar navbar-default">
@@ -91,44 +91,43 @@
 	</nav>
 	<div class="container">
 		<div class="row">
+		
 			<table class="table table-striped" style="text-align: center; border: solid #dddddd">
 				<thead>
-					<tr>
-						<th style="background-color: #eeeeee; text-align: center;">번호</th>
-						<th style="background-color: #eeeeee; text-align: center;">제목</th>
-						<th style="background-color: #eeeeee; text-align: center;">작성자</th>
-						<th style="background-color: #eeeeee; text-align: center;">작성일</th>
+					<tr><!-- 제목부분에 colspan 3을 둬서 총 3개만큼의 열을 차지하게 만들어준다. -->
+						<th colspan="3" style="background-color: #eeeeee; text-align: center;">게시판 글 보기</th>	
 					</tr>
 				</thead>
 				<tbody>
-					<%
-						BbsDAO bbsDAO = new BbsDAO();//인스턴스생성
-						ArrayList<Bbs> list = bbsDAO.getList(pageNumber);
-						for(int i=0; i<list.size(); i++){
-					%>
 					<tr>
-						<td><%= list.get(i).getBbsID() %></td> <!-- 특수문자를 치환해 주는 코드를 추가해 줌으로써 보안상의 문제를 막아줄수있다.외부에서 악성스크립트를 삽입하려고 하더라도 특수문자를 우리눈에 보이는 형태로 치환해줌으로써 미연에 방지한다. -->
-						<td><a href="view.jsp?bbsID=<%= list.get(i).getBbsID() %>"><%= list.get(i).getBbsTitle().replaceAll(" ", "&nbsp;").replaceAll("<", "&lt;").replaceAll(">","&gt;").replaceAll("\n","<br>") %></a></td>
-						<td><%= list.get(i).getUserID() %></td>
-						<td><%= list.get(i).getBbsDate().substring(0,11) + list.get(i).getBbsDate().substring(11, 13) + "시" + list.get(i).getBbsDate().substring(14, 16) + "분" %></td>
-					</tr>				
-					<% 
-						}	
-					%>
-				</tbody>		
-			</table> <!-- 테이블 자체는 글의 목록을 보여주는 역할이고 오른쪽 밑에 글을 쓸수있는 화면으로 넘어갈수있게 링크를 달아준다.  -->
+						<td style="width: 20%;">글 제목</td>
+						<td colspan="2"><%= bbs.getBbsTitle().replaceAll(" ", "&nbsp;").replaceAll("<", "&lt;").replaceAll(">","&gt;").replaceAll("\n","<br>")%></td>
+					</tr> <!--colspan 2을 둬서 2개만큼의 열을 차지하게 한다. -->
+					<tr>
+						<td>작성자</td>
+						<td colspan="2"><%= bbs.getUserID() %></td>
+					</tr>
+					<tr>
+						<td>작성일자</td>
+						<td colspan="2"><%= bbs.getBbsDate().substring(0, 11) + bbs.getBbsDate().substring(11,13) + "시" + bbs.getBbsDate().substring(14, 16) + "분" %></td>
+					</tr>
+					<tr>
+						<td>내용</td> <!-- 특수문자 를 삽입할수있게 코드를 추가해준다. -->
+						<td colspan="2" style="min-height: 200px; text-align: left;"><%= bbs.getBbsContent().replaceAll(" ", "&nbsp;").replaceAll("<", "&lt;").replaceAll(">","&gt;").replaceAll("\n","<br>")%></td>
+					</tr>
+				</tbody>				
+			</table>
+			<a href="bbs.jsp" class="btn btn-primary">목록</a>	
 			<%
-				if(pageNumber != 1){
+				if(userID != null && userID.equals(bbs.getUserID())){
+			%>	
+				<a href="update.jsp?bbsID=<%= bbsID %>" class="btn btn-primary">수정</a>
+				<a href="deleteAction.jsp?bbsID=<%= bbsID %>" class="btn btn-primary">삭제</a>
+			<% 
+				}//현재들어오는 글의 작성자가 본인이라면 해당글을 수정 및 삭제 할수있게 만들어준다.
 			%>
-				<a href="bbs.jsp?pageNumber=<%=pageNumber -1 %>" class="btn btn-success btn-arraw-left">이전</a>
-			<%
-				} if(bbsDAO.nextPage(pageNumber + 1)) {
-			%>
-				<a href="bbs.jsp?pageNumber=<%=pageNumber +1 %>" class="btn btn-success btn-arraw-left">다음</a>
-			<%
-				}
-			%>
-			<a href="write.jsp" class="btn btn-primary pull-right">글쓰기</a>
+			<input type="submit" class="btn btn-primary pull-right" value="글쓰기"> <!-- 글쓰기 버튼 -->
+		
 		</div>
 	</div>
 	<!-- 부트스트랩 참조 영역 -->
