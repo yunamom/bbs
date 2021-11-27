@@ -1,8 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ page import = "java.io.PrintWriter" %>
-<%@ page import ="bbs.Bbs" %>
-<%@ page import ="bbs.BbsDAO" %> <!-- 데이터베이스 객체를 가져온다. -->]
+<%@ page import = "bbs.Bbs" %>
+<%@ page import = "bbs.BbsDAO" %><!-- 데이터 베이스 객체를 가져온다. -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -19,18 +19,33 @@
 		if (session.getAttribute("userID") != null){ //로그인을 한경우 
 			userID = (String) session.getAttribute("userID");
 		}
+		if (userID == null){
+			PrintWriter script = response.getWriter();
+			script.println("<script>");
+			script.println("alert('로그인을 하세요.')");
+			script.println("locationhref = 'login.jsp'");
+			script.println("</script>");
+		}
 		int bbsID = 0;
 		if (request.getParameter("bbsID") != null){
 			bbsID = Integer.parseInt(request.getParameter("bbsID"));
 		}
-		if (bbsID == 0){ //번호가 존재해야지 특정한 글을 볼수있도록한다.
+		if (bbsID == 0){
 			PrintWriter script = response.getWriter();
 			script.println("<script>");
 			script.println("alert('유효하지 않은 글입니다.')");
 			script.println("location.href = 'bbs.jsp'");
 			script.println("</script>");
 		}
-		Bbs bbs = new BbsDAO().getBbs(bbsID); //해당글의 정보를 가져올수있게한다.
+		Bbs bbs = new BbsDAO().getBbs(bbsID);
+		if (!userID.equals(bbs.getUserID())){
+			PrintWriter script = response.getWriter();
+			script.println("<script>");
+			script.println("alert('권한이 없습니다.')");
+			script.println("location.href = 'bbs.jsp'");
+			script.println("</script>");
+		}
+		
 	%>
 	<!--  네비게이션 영역 -->
 	<nav class="navbar navbar-default">
@@ -52,25 +67,6 @@
 				<li><a href="main.jsp">메인</a></li>
 				<li class="active"><a href="bbs.jsp">게시판</a></li>
 			</ul>
-			<%
-				if(userID == null){ //로그인이 되어있지 않다면.
-			%>		
-				<!-- 헤더 우측에 나타나는 드랍다운 영역 -->
-			<ul class="nav navbar-nav navbar-right">
-				<li class="dropdown">
-					<a href="#" class="dropdown-toggle"
-						data-toggle="dropdown" role="button" aria-haspopup="true"
-						aria-expanded="false">접속하기<span class="caret"></span></a>
-					<!--  드랍다운 아이템 영역 -->
-					<ul class="dropdown-menu">
-						<li><a href="login.jsp">로그인</a></li>
-						<li><a href="join.jsp">회원가입</a></li>
-				 	</ul>
-				 </li>
-			</ul>			
-			<%
-				} else {//로그인이 되어있는 회원들이 볼수있는 영역.
-			%>
 				<!-- 헤더 우측에 나타나는 드랍다운 영역 -->
 			<ul class="nav navbar-nav navbar-right">
 				<li class="dropdown">
@@ -83,51 +79,31 @@
 				 	</ul>
 				 </li>
 			</ul>										
-			<% 
-				}
-			%>
-			
 		</div>
 	</nav>
 	<div class="container">
 		<div class="row">
-		
+		<form method="post" action="updateAction.jsp?bbsID=<%= bbsID %>"> 
+		<!--updateAction 페이지로 bbs 아이디를 보낼수있게 해준다. -->
 			<table class="table table-striped" style="text-align: center; border: solid #dddddd">
 				<thead>
-					<tr><!-- 제목부분에 colspan 3을 둬서 총 3개만큼의 열을 차지하게 만들어준다. -->
-						<th colspan="3" style="background-color: #eeeeee; text-align: center;">게시판 글 보기</th>	
+					<tr>
+						<th colspan="2" style="background-color: #eeeeee; text-align: center;">게시판 글 수정 양식</th>	
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
-						<td style="width: 20%;">글 제목</td>
-						<td colspan="2"><%= bbs.getBbsTitle().replaceAll(" ", "&nbsp;").replaceAll("<", "&lt;").replaceAll(">","&gt;").replaceAll("\n","<br>")%></td>
-					</tr> <!--colspan 2을 둬서 2개만큼의 열을 차지하게 한다. -->
+						<td><input type="text" class="form-control" placeholder="글 제목" 
+						name="bbsTitle" maxlength="50" value="<%= bbs.getBbsTitle()%>"></td> <!-- 제목과 내용을 자기가 수정하기 전에 내용을 보여줄수있게한다.-->
+					</tr> <!-- 글 제목과 내용이 한줄씩 나올수있도록 tr태그로 각각 묶어준다. -->
 					<tr>
-						<td>작성자</td>
-						<td colspan="2"><%= bbs.getUserID() %></td>
-					</tr>
-					<tr>
-						<td>작성일자</td>
-						<td colspan="2"><%= bbs.getBbsDate().substring(0, 11) + bbs.getBbsDate().substring(11,13) + "시" + bbs.getBbsDate().substring(14, 16) + "분" %></td>
-					</tr>
-					<tr>
-						<td>내용</td> <!-- 특수문자 를 삽입할수있게 코드를 추가해준다. -->
-						<td colspan="2" style="min-height: 200px; text-align: left;"><%= bbs.getBbsContent().replaceAll(" ", "&nbsp;").replaceAll("<", "&lt;").replaceAll(">","&gt;").replaceAll("\n","<br>")%></td>
+						<td><textarea class="form-control" placeholder="글 내용" name="bbsContent" 
+						maxlength="2048" style="height:350px;"><%=bbs.getBbsContent() %></textarea></td> <!--  글작성  -->
 					</tr>
 				</tbody>				
-			</table>
-			<a href="bbs.jsp" class="btn btn-primary">목록</a>	
-			<%
-				if(userID != null && userID.equals(bbs.getUserID())){
-			%>	
-				<a href="update.jsp?bbsID=<%= bbsID %>" class="btn btn-primary">수정</a>
-				<a onclick="return confirm('정말로 삭제하시겠습니까?')" href="deleteAction.jsp?bbsID=<%= bbsID %>" class="btn btn-primary">삭제</a>
-			<% 
-				}//현재들어오는 글의 작성자가 본인이라면 해당글을 수정 및 삭제 할수있게 만들어준다.
-			%>
+			</table>		
 			<input type="submit" class="btn btn-primary pull-right" value="글쓰기"> <!-- 글쓰기 버튼 -->
-		
+		</form>
 		</div>
 	</div>
 	<!-- 부트스트랩 참조 영역 -->
