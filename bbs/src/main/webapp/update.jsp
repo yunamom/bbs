@@ -11,6 +11,7 @@
 <meta name="viewport" content="width-device-width", initial-scale="1">
 <!-- css폴더 안의 bootstrap.css를 참조해서 이 홈페이지의 디자인을 사용하는 링크 -->
 <link rel="stylesheet" href="css/bootstrap.css">
+<link rel="stylesheet" href="css/custom.css">
 <title>BBS</title>
 </head>
 <body>
